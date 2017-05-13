@@ -147,40 +147,40 @@ type (
 		ChannelLinksAllowed bool
 
 		// Specifies whether links are clickable in the chat.
-		channelLinksClickable bool
+		ChannelLinksClickable bool
 
 		// Interval required between each chat message.
-		channelSlowchat int
+		ChannelSlowchat int
 
 		// The message to be sent when a user subscribes to the channel. The template parameter %USER% will be replaced with the subscriber's name.
-		channelNotifySubscribemessage string
+		ChannelNotifySubscribemessage string
 
 		// Indicates whether a notification should be shown upon subscription.
-		channelNotifySubscribe bool
+		ChannelNotifySubscribe bool
 
 		// The message to be sent when a user follows the channel. The template parameter "%USER%" will be replaced with the follower's name.
-		channelNotifyFollowmessage string
+		ChannelNotifyFollowmessage string
 
 		// Indicates whether a notification should be shown upon follow.
-		channelNotifyFollow bool
+		ChannelNotifyFollow bool
 
 		// The message to be sent when a user hosts the channel. The template parameter "%USER%" will be replaced with the hoster's name.
-		channelNotifyHostedBy string
+		ChannelNotifyHostedBy string
 
 		// The message to be sent when the channel hosts another. The template parameter "%USER%" will be replaced with the hostee's name.
-		channelNotifyHosting string
+		ChannelNotifyHosting string
 
 		// The text to be added to the subscription email.
-		channelPartnerSubmail string
+		ChannelPartnerSubmail string
 
 		// Indicates whether to mute when the streamer opens his own stream.
-		channelPlayerMuteOwn bool
+		ChannelPlayerMuteOwn bool
 
 		// Indicates whether the tweet button should be shown.
-		channelTweetEnabled bool
+		ChannelTweetEnabled bool
 
 		// The message to be used when a user tweets about the channel. The template parameter %URL% will be replaced with the share url.
-		channelTweetBody string
+		ChannelTweetBody string
 	}
 
 	ChatUser struct {
@@ -472,16 +472,16 @@ type (
 
 	Ingest struct {
 		// The name and location of the ingest.
-		name string
+		Name string
 
 		// Url of the host.
-		host string
+		Host string
 
 		// A websocket address that is used for ping tests.
-		pingTest string
+		PingTest string
 
 		// List of supported protocols
-		protocols []map[string]string
+		Protocols []map[string]string
 	}
 
 	InteractiveConnectionInfo struct {
@@ -501,8 +501,8 @@ type (
 	InteractiveControls struct {
 		ReportInterval int
 		Joysticks      []map[string]interface{}
-		screens        []map[string]interface{}
-		tactiles       []map[string]interface{}
+		Screens        []map[string]interface{}
+		Tactiles       []map[string]interface{}
 	}
 
 	InteractiveGame struct {
