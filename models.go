@@ -9,7 +9,7 @@ type (
 	}
 
 	Achievement struct {
-		Slug        string `json:"slug"`
+		Slug        string `json:"slug"` // maxLength: 100
 		Name        string `json:"name"`
 		Description string `json:"description"`
 		Sparks      uint   `json:"sparks"`
@@ -23,7 +23,7 @@ type (
 		Earned bool `json:"earned"`
 
 		// Unit interval indicating the progress.
-		Progress int `json:"progress"`
+		Progress int `json:"progress"` // ≤ 1
 
 		// The name of the achievement.
 		Name string `json:"achievement"`
@@ -87,7 +87,7 @@ type (
 		Name string
 
 		// The target audience of the channel.
-		Audience string
+		Audience string // (family, teen, 18+)
 
 		// Amount of unique viewers that ever viewed this channel.
 		ViewersTotal uint
@@ -136,7 +136,10 @@ type (
 		// The game type.
 		Type *GameType
 
-		User *User
+		User struct {
+			*User
+			Groups []UserGroup `json:"groups"`
+		}
 	}
 
 	ChannelPreferences struct {
@@ -144,43 +147,43 @@ type (
 		ShareText string
 
 		// Specifies whether links are allowed in the chat.
-		ChannelLinksAllowed bool
+		ChannelLinksAllowed bool `json:"channel:links:allowed"`
 
 		// Specifies whether links are clickable in the chat.
-		ChannelLinksClickable bool
+		ChannelLinksClickable bool `json:"channel:links:clickable"`
 
 		// Interval required between each chat message.
-		ChannelSlowchat int
+		ChannelSlowchat int `json:"channel:slowchat"`
 
 		// The message to be sent when a user subscribes to the channel. The template parameter %USER% will be replaced with the subscriber's name.
-		ChannelNotifySubscribemessage string
+		ChannelNotifySubscribemessage string `json:"channel:notify:subscribemessage"`
 
 		// Indicates whether a notification should be shown upon subscription.
-		ChannelNotifySubscribe bool
+		ChannelNotifySubscribe bool `json:"channel:notify:subscribe"`
 
 		// The message to be sent when a user follows the channel. The template parameter "%USER%" will be replaced with the follower's name.
-		ChannelNotifyFollowmessage string
+		ChannelNotifyFollowmessage string `json:"channel:notify:followmessage"`
 
 		// Indicates whether a notification should be shown upon follow.
-		ChannelNotifyFollow bool
+		ChannelNotifyFollow bool `json:"channel:notify:follow"`
 
 		// The message to be sent when a user hosts the channel. The template parameter "%USER%" will be replaced with the hoster's name.
-		ChannelNotifyHostedBy string
+		ChannelNotifyHostedBy string `json:"channel:notify:hostedBy"`
 
 		// The message to be sent when the channel hosts another. The template parameter "%USER%" will be replaced with the hostee's name.
-		ChannelNotifyHosting string
+		ChannelNotifyHosting string `json:"channel:notify:hosting"`
 
 		// The text to be added to the subscription email.
-		ChannelPartnerSubmail string
+		ChannelPartnerSubMail string `json:"channel:partner:submail"`
 
 		// Indicates whether to mute when the streamer opens his own stream.
-		ChannelPlayerMuteOwn bool
+		ChannelPlayerMuteOwn bool `json:"channel:player:muteOwn"`
 
 		// Indicates whether the tweet button should be shown.
-		ChannelTweetEnabled bool
+		ChannelTweetEnabled bool `json:"channel:tweet:enabled"`
 
 		// The message to be used when a user tweets about the channel. The template parameter %URL% will be replaced with the share url.
-		ChannelTweetBody string
+		ChannelTweetBody string `json:"channel:tweet:body"`
 	}
 
 	ChatUser struct {
@@ -213,7 +216,36 @@ type (
 		ChannelID uint
 
 		// The settings configure the confetti. Most options are customizable math expressions parsed with expr-eval.
-		Settings map[string]interface{}
+		Settings struct {
+			// Expression to be evaluated to determine the number of generated confetti particles. The window height and width will be passed into the expression. The number of confetti particles will be capped based on the device profile, however. For example: "count": "35 * width / 100".
+			Count string
+
+			Particles []struct {
+				// Weighted probability that a generated confetti particle will be this particle. Weighting is done based on the sum all probabilities.
+				Probability int
+
+				// Expression to be evaluated to determine the vertical velocity, in pixels per millisecond, of the particle. It's called with the window width and height. For example: "velocity": "height / 1000 / 4".
+				Velocity string
+
+				// Expression to be evaluated to determine the "depth" of the particle, which will be used to scale its size and velocity to achieve a pseudo-3d effect. It's called with the window width and height. For example: "zdepth": "1 + random(3)".
+				ZDepth string
+
+				// Expression to determine the magnitude of the wave, in pixels, that each particle follows on its horizontal axis as it floats down. It's called with the window width and height. For example: "wiggleMagnitude": "15 + random(10)".
+				WiggleMagnitude string
+
+				// Expression to determine the period of the wave, in milliseconds, that each particle follows on its horizontal axis as it floats down. It's called with the window width and height. For example: "wigglePeriod": "1000 + random(500)".
+				WigglePeriod string
+
+				// Expression to determine how long each particle lives for, in milliseconds, before being destroyed. It's called with the window width and height. For example: "lifetime": "1200 + random(2000)".
+				LifeTime string
+
+				// Expression called continuously to determine the opacity. It's called a lifetime values, which starts at zero and goes to one as the time passes, and should return an opacity value in the range from zero to one. For example: "fader": "1 - lifetime^3".
+				Fader string
+
+				// Describes the confetti graphic to be drawn.
+				Draw interface{} // (ConfettiCircle ∪ ConfettiRectangle ∪ ConfettiImage)
+			}
+		}
 	}
 
 	ConfettiCircle struct {
@@ -226,7 +258,19 @@ type (
 		// Expression to determine the length of time the circle takes to do a vertical, pseudo-3d spin around the x axis. For example: "flipPeriod": "500 + random(1000)"
 		FlipPeriod string
 
-		Colors []map[string]interface{}
+		Colors []struct {
+			// Weighted probability that a generated confetti particle will be this color. Weighting is done based on the sum all probabilities.
+			Probability int
+
+			// Expression used to generate the red color component, should return a value between 0 and 255 inclusive.
+			R string
+
+			// Expression used to generate the red color component, should return a value between 0 and 255 inclusive.
+			G string
+
+			// Expression used to generate the red color component, should return a value between 0 and 255 inclusive.
+			B string
+		}
 	}
 
 	ConfettiImage struct {
@@ -256,7 +300,19 @@ type (
 		// Expression to determine the length of time the circle takes to do a vertical, pseudo-3d spin around the x axis. For example: "flipPeriod": "500 + random(1000)"
 		FlipPeriod string
 
-		Colors []map[string]interface{}
+		Colors []struct {
+			// Weighted probability that a generated confetti particle will be this color. Weighting is done based on the sum all probabilities.
+			Probability int
+
+			// Expression used to generate the red color component, should return a value between 0 and 255 inclusive.
+			R string
+
+			// Expression used to generate the red color component, should return a value between 0 and 255 inclusive.
+			G string
+
+			// Expression used to generate the red color component, should return a value between 0 and 255 inclusive.
+			B string
+		}
 	}
 
 	DiscordBot struct {
@@ -270,7 +326,7 @@ type (
 		GuildID string
 
 		// Determines which users can get invites to the Discord channel. It can be set to "everyone", "followers", "subs", or "noone" to disable invites. Defaults to "noone".
-		InviteSetting string
+		InviteSetting string // (EVERYONE, FOLLOWERS, SUBS, NOONE)
 
 		// The ID of the server channel that new users are invited to.
 		InviteChannel string
@@ -287,7 +343,17 @@ type (
 		// A list of Discord roles who will be able to use subscriber emotes. (This only has an effect for partnered channels.)
 		SyncEmoteRoles []uint
 
-		Roles []map[string]interface{}
+		Roles []struct {
+			ID uint
+
+			// Describes what group of people are given this role.
+			Type string // (SUBS, FOLLOWERS)
+
+			RoleID string
+
+			// Number of days subscribers have until they're kicked from the server if their subscription expires. It defaults to 14 days and may be set to null to disable kicking. Violence is never the answer.
+			GracePeriod uint
+		}
 	}
 
 	DiscordChannel struct {
@@ -325,7 +391,11 @@ type (
 		Time *IsoDate
 	}
 
-	EmoticonGroup struct {
+	EmoticonGroup map[string]struct {
+		// X coordinate of the emote.
+		X uint
+		// Y coordinate of the emote.
+		Y uint
 	}
 
 	ExpandedChannel struct {
@@ -364,7 +434,20 @@ type (
 	}
 
 	FTLVideoManifest struct {
-		Resolutions []VideoManifestResolution
+		Resolutions []struct {
+			*VideoManifestResolution
+			IceServers []struct {
+				// The url of the ice server, can be stun or turn.
+				URL string
+				// Only set when url protocol is turn.
+				UserName string
+				// Only set when url protocol is turn.
+				Credentials string
+			}
+
+			// The ID of the channel.
+			RtcID uint
+		}
 
 		// Time the stream started.
 		Since *IsoDate
@@ -381,7 +464,7 @@ type (
 		EndedAt *IsoDate
 
 		// auto means it was created by the featuring service.
-		Type string
+		Type string // (auto, manual)
 
 		// The user that scheduled the feature.
 		UserID uint
@@ -458,7 +541,7 @@ type (
 		Exact bool
 	}
 
-	// Base game type.
+	// GameTypeSimple is a base game type.
 	GameTypeSimple struct {
 		// The unique ID of the game type.
 		ID uint
@@ -470,6 +553,7 @@ type (
 		CoverUrl string
 	}
 
+	// Ingest is an ingest definition.
 	Ingest struct {
 		// The name and location of the ingest.
 		Name string
@@ -481,7 +565,10 @@ type (
 		PingTest string
 
 		// List of supported protocols
-		Protocols []map[string]string
+		Protocols []struct {
+			// The protocol name.
+			Type string // (ftl, rtmp)
+		}
 	}
 
 	InteractiveConnectionInfo struct {
@@ -494,15 +581,99 @@ type (
 		// Influence multiplier
 		Influence int
 
-		// The interactive game the channel is using.
-		Version *InteractiveVersion
+		Version struct {
+			// The interactive game the channel is using.
+			*InteractiveVersion
+
+			// The parent game of the version.
+			Game *InteractiveGame
+		}
 	}
 
 	InteractiveControls struct {
 		ReportInterval int
-		Joysticks      []map[string]interface{}
-		Screens        []map[string]interface{}
-		Tactiles       []map[string]interface{}
+		Joysticks      []struct {
+			// The unique ID of the control.
+			ID uint
+
+			Blueprint []struct {
+				// The state the button belongs to.
+				State string // maxLength: 100
+
+				Grid string // maxLength: 100
+
+				// X coordinate of the joystick.
+				X uint
+
+				// Y coordinate of the joystick.
+				Y uint
+
+				// Width of the joystick.
+				Width int // 3 ≤ self ≤ 3
+
+				// Height of the joystick.
+				Height int // 3 ≤ self ≤ 3
+			}
+
+			// The analysis types enabled on this joystick.
+			Analysis *InteractiveJoyStickAnalysis
+		}
+		Screens []struct {
+			// The unique ID of the control.
+			ID uint
+
+			Blueprint []struct {
+				// The state the button belongs to.
+				State string // maxLength: 100
+			}
+
+			// The analysis types enabled on this screen control.
+			Analysis *InteractiveScreenAnalysis
+		}
+		Tactiles []struct {
+			// The unique ID of the control.
+			ID uint
+
+			Blueprint []struct {
+				// The state the button belongs to.
+				State string // maxLength: 100
+
+				Grid string // maxLength: 100
+
+				// X coordinate of the tactile.
+				X uint
+
+				// Y coordinate of the tactile.
+				Y uint
+
+				// Width of the tactile.
+				Width int // 1 ≤ self ≤ 4
+
+				// Height of the tactile.
+				Height int // 1 ≤ self ≤ 2
+			}
+
+			// The key to be bound to the tactile.
+			Key uint
+
+			// The text to show on the tactile.
+			Text string
+
+			Cost struct {
+				Press struct {
+					// Cost, in sparks, for a tactile press.
+					Cost uint
+				}
+			}
+
+			Cooldown struct {
+				// Length of cooldown started when a user pushes this tactile. In milliseconds.
+				Press int
+			}
+
+			// The analysis types enabled on this tactile.
+			Analysis *InteractiveTactileAnalysis
+		}
 	}
 
 	InteractiveGame struct {
@@ -529,16 +700,40 @@ type (
 	}
 
 	InteractiveGameListing struct {
-		Versions []map[string]interface{}
-		Owner    *User
+		Versions []struct {
+			// The ID of the version.
+			ID uint
+
+			// The semantic version string.
+			Version string
+
+			// The current state of the version. draft: Not in review, not published. pending: In review. published: Published and available to the public.
+			State string // (draft, pending, published)
+
+			// Value used to help ordering versions.
+			VersionOrder uint
+		}
+		Owner *User
 	}
 
 	InteractiveJoyStickAnalysis struct {
-		Coords map[string]bool
+		Coords struct {
+			// Enable joystick mean analysis on this joystick.
+			Mean bool
+
+			// Enable standard deviation analysis on this joystick.
+			StdDev bool
+		}
 	}
 
 	InteractiveScreenAnalysis struct {
-		Position map[string]bool
+		Position struct {
+			// Enable mean analysis for this screen control.
+			Mean bool
+
+			// Enable standard deviation analysis for this screen control.
+			StdDev bool
+		}
 
 		// Enable click event for analysis for this screen control.
 		Clicks bool
@@ -569,7 +764,7 @@ type (
 		Changelog string
 
 		// The current state of the version. draft: Not in review, not published. pending: In review. published: Published and available to the public.
-		State string
+		State string // (draft, pending, published)
 
 		// Installation instructions, may contain HTML.
 		Installation string
@@ -581,7 +776,7 @@ type (
 		Controls *InteractiveControls
 
 		// Indicates which version of the Interactive Controls this Interactive Version uses.
-		ControlVersion string
+		ControlVersion string // (1.0, 2.0)
 	}
 
 	// A user invoice.
@@ -593,7 +788,7 @@ type (
 		Currency string
 
 		// The invoice status
-		Status string
+		Status string // (paid, unpaid, errored, cancelled)
 
 		// The owner of the invoice.
 		User uint
@@ -614,7 +809,7 @@ type (
 		ID uint
 
 		// The purchase type
-		Type string
+		Type string // (subscription, redeemable)
 
 		// The channel id
 		RelID uint
@@ -629,7 +824,7 @@ type (
 		Quantity uint
 
 		// The invoice status
-		Status string
+		Status string // (paid, unpaid, errored, cancelled)
 
 		// The user ID of the invoice owner.
 		User uint
@@ -661,7 +856,12 @@ type (
 	}
 
 	LightVideoManifest struct {
-		Resolutions []VideoManifestResolution
+		Resolutions []struct {
+			*VideoManifestResolution
+
+			// The source url for the stream.
+			URL string
+		}
 
 		// Time the stream started.
 		Since *IsoDate
@@ -700,7 +900,12 @@ type (
 		LastRead *IsoDate
 
 		// A list of channels and transports registered on which we'll sent wentlive emails.
-		LiveNotifications []map[string]interface{}
+		LiveNotifications []struct {
+			// May be "*", which will toggle on the associated transport for all channels the user follows.
+			ChannelID interface{}
+
+			Kind []string
+		}
 
 		// Item type: object
 		Transports []interface{}
@@ -722,11 +927,9 @@ type (
 		ID uint
 
 		// The unique ID of the client.
-		ClientID string
+		ClientID string // pattern: ^[a-f0-9]{48}$
 
 		// The name of the client.
-		//
-		// pattern:  ^[a-f0-9]{48}$
 		Name string
 
 		// The url of the website using this client.
@@ -751,7 +954,7 @@ type (
 	}
 
 	PartnershipApp struct {
-		Status string
+		Status string // (applied, accepted, denied)
 
 		// The date of the next possible application, only set if status is denied. If the value is null while status is denied, the channel is banned from re-applying.
 		Reapplies *IsoDate
@@ -772,7 +975,10 @@ type (
 		Preferences *UserPreferences
 
 		// Two factor related data.
-		TwoFactor map[string]bool
+		TwoFactor struct {
+			// Indicates whether two factor is enabled.
+			Enabled bool
+		}
 	}
 
 	// A fully populater user with channel, preferences, groups and private details.
@@ -781,9 +987,15 @@ type (
 		Email string
 
 		// The users password.
-		Password string
+		Password string // minLength: 4
 
-		TwoFactor map[string]bool
+		TwoFactor struct {
+			// Indicates whether 2fa is enabled.
+			Enabled bool
+
+			// Indicates whether recovery codes have been viewed.
+			CodesViewed bool
+		}
 	}
 
 	Rating struct {
@@ -804,7 +1016,7 @@ type (
 		// The channel ID this recording is a video of.
 		ChannelID uint
 
-		State string
+		State string // (PROCESSING, AVAILABLE, DELETED)
 
 		// The number of users who have viewed this recording.
 		ViewsTotal uint
@@ -848,7 +1060,7 @@ type (
 		Cancelled bool
 
 		// The internal name of the payment processsor.
-		Gateway string
+		Gateway string // (braintree, stripe)
 
 		// Counts the amount of times this recurring payment has recurred.
 		TimesPaid uint
@@ -858,7 +1070,15 @@ type (
 	}
 
 	RecurringPaymentExpanded struct {
-		Subscription *Subscription
+		Subscription struct {
+			*Subscription
+
+			// The user of the payment.
+			User *User
+
+			// The group obtained through this payment.
+			Group *UserGroup
+		}
 	}
 
 	Redeemable struct {
@@ -868,8 +1088,8 @@ type (
 		// The ID of the owning user.
 		OwnerID uint
 
-		State string
-		Type  string
+		State string // (unpaid, paid, redeemed)
+		Type  string // (pro)
 
 		// The redeem code.
 		Code string
@@ -906,7 +1126,7 @@ type (
 		URL string
 
 		// The storage type of the resource.
-		Store string
+		Store string // (s3)
 
 		// Relative url to the resource.
 		RemotePath string
@@ -920,7 +1140,19 @@ type (
 		Expires *UnixTimestampMillis
 
 		// Session meta data.
-		Meta map[string]string
+		Meta struct {
+			// The device type.
+			Device string
+
+			// The client name. "Other" is web.
+			Client string
+
+			// Semantic version of the client.
+			CVersion string
+
+			// The operating system name of the client.
+			OS string
+		}
 
 		// Last if used for that session, can be v4 and v6.
 		IP string
@@ -934,7 +1166,7 @@ type (
 		ID uint
 
 		// The type of the share.
-		Type string
+		Type string // (interactiveGameDraft)
 
 		// The
 		RelID string
@@ -1009,7 +1241,7 @@ type (
 		Channel uint
 
 		// The gateway that the subscription was made with.
-		Gateway string
+		Gateway string // (redeemable, stripe, braintree)
 
 		// The amount of revenue gained through this gateway.
 		Total int
@@ -1032,7 +1264,7 @@ type (
 		ResourceType string
 
 		// The status of the subscription.
-		Status string
+		Status string // (active, expired, pending)
 
 		// Indicates whether the payment has been cancelled after completion.
 		Cancelled bool
@@ -1072,10 +1304,10 @@ type (
 		OwnerID uint
 
 		// The internal name of the team.
-		Token string
+		Token string // minLength: 4, maxLength: 20
 
 		// The display name of the team.
-		Name string
+		Name string // minLength: 4, maxLength: 36
 
 		// The description of the team.
 		Description string
@@ -1202,8 +1434,8 @@ type (
 		// Social links.
 		Social *SocialInfo
 
-		UserName string
-		Email    string
+		UserName string // minLength: 4, maxLength: 20, pattern: ^[A-Za-z_][\w-]+$
+		Email    string // maxLength: 190
 
 		// Indicates whether the user has verified their e-mail.
 		Verified bool
@@ -1252,7 +1484,7 @@ type (
 		EventData interface{}
 
 		// Source data for the event action. This may be one of:
-		Source string
+		Source string // (GUEST, SELF, APP, INTERNAL, ADMIN)
 
 		// Unstructured data containing more information about the event's source.
 		SourceData interface{}
@@ -1264,40 +1496,45 @@ type (
 	// Object containing user preferences.
 	UserPreferences struct {
 		// Use html5 to play chat sounds.
-		ChatSoundsHTML5 bool
+		ChatSoundsHTML5 bool `json:"chat:sounds:html5"`
 
 		// Play sounds in chat.
-		ChatSoundsPlay bool
+		ChatSoundsPlay bool `json:"chat:sounds:play"`
 
 		// Allow receiving whispers.
-		ChatWhispers bool
+		ChatWhispers bool `json:"chat:whispers"`
 
 		// Show timestamps in chat.
-		ChatTimestamps bool
+		ChatTimestamps bool `json:"chat:timestamps"`
 
 		// Set the chat color to a certain color so it can be easily replaced.
-		ChatChromakey bool
+		ChatChromakey bool `json:"chat:chromakey"`
 
 		// Enable chat tagging via @username.
-		ChatTagging bool
+		ChatTagging bool `json:"chat:tagging"`
 
 		// Chat sound volume as unit interval.
-		ChatSoundsVolume int
+		ChatSoundsVolume int `json:"chat:sounds:volume"`
 
 		// Use colors in chat.
-		ChatColors bool
+		ChatColors bool `json:"chat:colors"`
 
 		// Hide while in chats.
-		ChatLurkmode bool
+		ChatLurkmode bool `json:"chat:lurkmode"`
 
 		// Notification settings.
-		ChannelNotifications map[string][]string
+		ChannelNotifications struct {
+			// List of sources notifications are allowed from.
+			IDs []string
+
+			Transports []string // (notify, email)
+		} `json:"channel:notifications"`
 
 		// Confirmed mature channels.
-		ChannelMatureAllowed bool
+		ChannelMatureAllowed bool `json:"channel:mature:allowed"`
 
 		// Force the player to the flash version.
-		ChannelPlayerForceflash bool
+		ChannelPlayerForceflash bool `json:"channel:player:forceflash"`
 	}
 
 	UserWithChannel struct {
@@ -1316,10 +1553,22 @@ type (
 		BaseURL string
 
 		// The format of the recording.
-		Format string
+		Format string // (hls, raw, dash, thumbnail, chat)
 
 		// Format-specific information about the VOD. Is null when type is chat.
-		Data map[string]interface{}
+		Data struct {
+			// Present for hls, raw, dash and thumbnail.
+			Width uint
+
+			// Present for hls, raw, dash and thumbnail.
+			Height uint
+
+			// Present for hls, raw and dash.
+			FPS int
+
+			// Present for hls, raw and dash.
+			Bitrate uint
+		}
 
 		// Id of the parent recording.
 		RecordingID uint
@@ -1375,10 +1624,10 @@ type (
 		Country string
 
 		// The viewer's browser, if it can be determined.
-		Browser string
+		Browser string // (chr, ff, ie, ios, sf, an)
 
 		// The viewer's playform, if it can be determined.
-		Platform string
+		Platform string // (desktop, tablet, mobile)?
 
 		Time *IsoDate
 	}
@@ -1388,6 +1637,6 @@ type (
 // Time is expected in the format yyyy-mm-dd hh:mm:ss.
 func (date *IsoDate) Unmarshal(data []byte) (err error) {
 	str := string(data[1 : len(data)-1])
-	(*date).Time, err = time.Parse(time.RFC3339Nano, str)
+	(*date).Time, err = time.Parse("2006-01-02T15:04:05.999Z", str)
 	return
 }
