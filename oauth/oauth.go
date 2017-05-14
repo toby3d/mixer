@@ -45,7 +45,7 @@ func NewClient(clientID, clientSecret, redirectURI string, scopes ...string) *Co
 
 func (cfg *Config) Exchange(code string) (*Token, error) {
 	oauth2.RegisterBrokenAuthHeaderProvider(cfg.Config.Endpoint.TokenURL)
-	token, err := cfg.Exchange(oauth2.NoContext, code)
+	token, err := cfg.Config.Exchange(oauth2.NoContext, code)
 	if err != nil {
 		return nil, err
 	}
