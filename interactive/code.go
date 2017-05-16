@@ -31,8 +31,8 @@ type Coder struct {
 
 // Creates a GZIP coder
 func NewGzip() *Coder {
-	var wBuf bytes.Buffer
-	var rBuf bytes.Buffer
+	wBuf := &bytes.Buffer{}
+	rBuf := &bytes.Buffer{}
 
 	return &Coder{
 		maxDecodeSize:    2000000,
@@ -45,8 +45,8 @@ func NewGzip() *Coder {
 
 // Creates an LZ4 coder
 func NewLZ4() *Coder {
-	var wBuf bytes.Buffer
-	var rBuf bytes.Buffer
+	wBuf := &bytes.Buffer{}
+	rBuf := &bytes.Buffer{}
 
 	return &Coder{
 		maxDecodeSize: 2000000,
